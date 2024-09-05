@@ -13,7 +13,14 @@ def get_mass_transfer_df(file_name):
     Returns 
     -------
     pandas DataFrame
-        Returns a dataframe where each row corresponds to one BBH merger. Columns are the COSMIC bin_num, number of mass transfer events, number of common envelope events, number of times the primary star initiates mass transfer, number of times the secondary star initiates mass transfer, the kstar of the first primary RLOF, the kstar of the first secondary RLOF, mass of BH_1, mass of BH_2, time to BBH formation, time to BBH merger, M_1 at ZAMS, M_2 at ZAMS, if the binary is mass flipped, mass of BBH primary, mass of BBH secondary, and mass ratio at ZAMS 
+        Returns a dataframe where each row corresponds to one BBH merger.
+        Columns are the COSMIC bin_num, number of mass transfer events, number 
+        of common envelope events, number of times the primary star initiates 
+        mass transfer, number of times the secondary star initiates mass 
+        transfer, the kstar of the first primary RLOF, the kstar of the first 
+        secondary RLOF, mass of BH_1, mass of BH_2, time to BBH formation, time 
+        to BBH merger, M_1 at ZAMS, M_2 at ZAMS, if the binary is mass flipped, 
+        mass of BBH primary, mass of BBH secondary, and mass ratio at ZAMS 
     """
     
     # Grab relevant bin_nums from bcm
@@ -89,3 +96,77 @@ def get_mass_transfer_df(file_name):
     mass_transfer_df['q_zams'] = mass_transfer_df.zams_mass_2.values / mass_transfer_df.zams_mass_1.values.astype(float)
     
     return mass_transfer_df
+
+# Analytic equations of minimum black hole mass assuming 2 mass transfer events.
+# Based on section 2 of No Peaks Without Valleys (van Son 2022).
+
+a_SN = -0.9
+b_SN = 13.9
+f_core = 0.34
+m_thresh = 14.8 # Msun
+
+def dM_SN(m_core):
+    """
+    Mass lost from SN explosion.
+    """
+    threshold = (m_core <= m_thresh)
+    dM_SN = (a_SN * m_core + b_SN) * threshold
+    return dM_SN
+
+def min_zams_a(q_crit_2, f_acc, q_zams):
+    """
+    Minimum ZAMS mass of primary that still forms a BH.
+    """
+    numerator = b_SN * q_crit_2
+    denominator = q_crit_2 * f_core * (1 - a_SN) - f_acc * (1 - f_core) - q_zams
+    return numerator / denominator
+
+def min_BH_a(q_crit_2, f_acc, q_zams):
+    """
+    Minimum mass of black hole formed from primary star.
+
+    Parameters
+    ----------
+    q_crit_2 : float
+        Critical mass ratio at which mass transfer becomes unstable. Assumed to
+        be M_b / M_a, where a and be refer to the objects that were the 
+        primary and secondary star, respectively.
+    f_acc : float
+        Fraction of mass that is retained by the secondary star during the first
+        phase of mass transfer.
+    q_zams : float
+        Mass ratio of the binary at formation (ZAMS).
+
+    Return
+    ------
+    float
+        Mass in Msun
+    """
+    m_zams_a_val = min_zams_a(q_crit_2, f_acc, q_zams)
+    m_core_a = f_core * m_zams_a_val
+    return m_core_a - dM_SN(m_core_a)
+
+def min_BH_b(q_crit_2, f_acc, q_zams):
+    """
+    Minimum mass of black hole formed from secondary star.
+
+    Parameters
+    ----------
+    q_crit_2 : float
+        Critical mass ratio at which mass transfer becomes unstable. Assumed to
+        be M_b / M_a, where a and be refer to the objects that were the 
+        primary and secondary star, respectively.
+    f_acc : float
+        Fraction of mass that is retained by the secondary star during the first
+        phase of mass transfer.
+    q_zams : float
+        Mass ratio of the binary at formation (ZAMS).
+
+    Return
+    ------
+    float
+        Mass in Msun
+    """
+    m_post_mt1 = q_crit_2 * min_BH_a(q_crit_2, f_acc, q_zams)
+    m_core_b = m_post_mt1 * f_core
+    return m_core_b - dM_SN(m_core_b)
