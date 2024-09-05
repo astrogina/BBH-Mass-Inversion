@@ -70,18 +70,21 @@ def get_mass_transfer_df(file_name):
     counts = bpp.loc[bpp.evol_type == 7].value_counts('bin_num')
     mass_transfer_df.loc[counts.index, 'num_ce'] += counts.values.astype(float)
 
-    # Count number of times each star transfers mass (initiates RLOF) and record kstar of donor 
+    # Count number of times each star transfers mass (initiates RLOF)
     is_not_bbh = np.invert(is_bbh)
     primary_rlof = (bpp.evol_type == 3) & (bpp.RRLO_1 > 1)
     secondary_rlof = (bpp.evol_type == 3) & (bpp.RRLO_2 > 1)
 
     counts = bpp.loc[primary_rlof & is_not_bbh].value_counts('bin_num')
     mass_transfer_df.loc[counts.index, 'num_rlof_1'] += counts.values.astype(float)
-    mass_transfer_df.loc[counts.index, 'mt_kstar_1'] = bpp.loc[primary_rlof & is_not_bbh].groupby('bin_num').nth(0).kstar_1.astype(float)
-
     counts = bpp.loc[secondary_rlof & is_not_bbh].value_counts('bin_num')
     mass_transfer_df.loc[counts.index, 'num_rlof_2'] += counts.values.astype(float)
-    mass_transfer_df.loc[counts.index, 'mt_kstar_2'] = bpp.loc[secondary_rlof & is_not_bbh].groupby('bin_num').nth(0).kstar_2.astype(float)
+
+    # Get kstar of donor for first time that star initiates mass transfer 
+    mt_1 = bpp.loc[primary_rlof & is_not_bbh].groupby('bin_num').nth(0)
+    mass_transfer_df.loc[mt_1.bin_num, 'mt_kstar_1'] = mt_1.kstar_1.values.astype(float)
+    mt_2 = bpp.loc[secondary_rlof & is_not_bbh].groupby('bin_num').nth(0)
+    mass_transfer_df.loc[mt_2.bin_num, 'mt_kstar_2'] = mt_2.kstar_2.values.astype(float)
     
         
     # Store BBH masses in easier to use form
