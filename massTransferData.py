@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 
 def get_mass_transfer_df(file_name):
-    """
-    Get BBH mergers and information about their mass transfer history.
+    """Get BBH mergers and information about their mass transfer history.
 
     Parameters
     ----------
@@ -78,11 +77,11 @@ def get_mass_transfer_df(file_name):
 
     counts = bpp.loc[primary_rlof & is_not_bbh].value_counts('bin_num')
     mass_transfer_df.loc[counts.index, 'num_rlof_1'] += counts.values.astype(float)
-    mass_transfer_df.loc[counts.index, 'mt_kstar_1'] = bpp.loc[primary_rlof & is_not_bbh].groupby('bin_num').nth(0).astype(float)
+    mass_transfer_df.loc[counts.index, 'mt_kstar_1'] = bpp.loc[primary_rlof & is_not_bbh].groupby('bin_num').nth(0).kstar_1.astype(float)
 
     counts = bpp.loc[secondary_rlof & is_not_bbh].value_counts('bin_num')
     mass_transfer_df.loc[counts.index, 'num_rlof_2'] += counts.values.astype(float)
-    mass_transfer_df.loc[counts.index, 'mt_kstar_2'] = bpp.loc[secondary_rlof & is_not_bbh].groupby('bin_num').nth(0).astype(float)
+    mass_transfer_df.loc[counts.index, 'mt_kstar_2'] = bpp.loc[secondary_rlof & is_not_bbh].groupby('bin_num').nth(0).kstar_2.astype(float)
     
         
     # Store BBH masses in easier to use form
@@ -106,24 +105,21 @@ f_core = 0.34
 m_thresh = 14.8 # Msun
 
 def dM_SN(m_core):
-    """
-    Mass lost from SN explosion.
+    """Mass lost from SN explosion.
     """
     threshold = (m_core <= m_thresh)
     dM_SN = (a_SN * m_core + b_SN) * threshold
     return dM_SN
 
 def min_zams_a(q_crit_2, f_acc, q_zams):
-    """
-    Minimum ZAMS mass of primary that still forms a BH.
+    """Minimum ZAMS mass of primary that still forms a BH.
     """
     numerator = b_SN * q_crit_2
     denominator = q_crit_2 * f_core * (1 - a_SN) - f_acc * (1 - f_core) - q_zams
     return numerator / denominator
 
 def min_BH_a(q_crit_2, f_acc, q_zams):
-    """
-    Minimum mass of black hole formed from primary star.
+    """Minimum mass of black hole formed from primary star.
 
     Parameters
     ----------
@@ -147,8 +143,7 @@ def min_BH_a(q_crit_2, f_acc, q_zams):
     return m_core_a - dM_SN(m_core_a)
 
 def min_BH_b(q_crit_2, f_acc, q_zams):
-    """
-    Minimum mass of black hole formed from secondary star.
+    """Minimum mass of black hole formed from secondary star.
 
     Parameters
     ----------
