@@ -139,10 +139,17 @@ def m_zams_b_limit(m_zams_a, q_crit_2, f_acc, f_core = 0.34, f_winds=None, f_ppi
 
 def interp_min_bh_masses(q_zams, q_crit_2, f_acc, f_core, **kwargs):
     """For a given array of q_zams values, return the minimum BH masses."""
+    # Calculate everything as a function of m_zams,a
+    m_zams_a = np.linspace(5, 150)
+    m_zams_b = m_zams_b_limit(m_zams_a, q_crit_2, f_acc, f_core, **kwargs)
+    min_a = mass_BH_a(m_zams_a, f_core, **kwargs)
+    min_b = mass_BH_b(m_zams_a, m_zams_b, f_acc, f_core, **kwargs)
+    q = min_b / min_a
     
-    # 
-    
-    # return m_a, m_b
+    # Interpolate so it's a function of q_zams
+    m_a = np.interp(q_zams, q, min_a)
+    m_b = np.interp(q_zams, q, min_b)
+    return m_a, m_b
 
 def piecewise_f_core(M_star, m_turn=58, f_turn=0.41, slope_1=(0.1/55.), slope_2=(0.07 / 95.)):
     return f_turn + slope_1 * (M_star - m_turn) * (M_star < m_turn) + slope_2 * (M_star - m_turn) * (M_star >= m_turn)
