@@ -57,10 +57,10 @@ def get_mass_transfer_data(dat_file, merging_bbhs_only=True, chunksize=None, opt
             if len(bpp) > 0:
                 mt_df = process_bpp(bpp, optional_columns)
                 
-            if mass_transfer_df is None: 
-                mass_transfer_df = mt_df
-            else:
-                mass_transfer_df = pd.concat((mass_transfer_df, mt_df))
+                if mass_transfer_df is None: 
+                    mass_transfer_df = mt_df
+                else:
+                    mass_transfer_df = pd.concat((mass_transfer_df, mt_df))
 
             # set next chunk
             start_line = start_line + last_row + 1
