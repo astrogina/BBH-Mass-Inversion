@@ -166,7 +166,7 @@ def process_bpp(bpp, optional_columns):
         
         bpp_subset_start = bpp_subset.loc[bpp_subset.evol_type == 3]
         bpp_subset_end = bpp_subset.loc[bpp_subset.evol_type == 4]
-        bpp_subset_kstar_change = bpp_subset.loc[bpp_subset.evol_type == 2]
+        bpp_subset_kstar_change = bpp_subset.loc[(bpp_subset.evol_type == 2) & (bpp_subset.RRLO_1 > 1)]
         
         mass_transfer_df['mt_kstar_1_change'] = bpp_subset_kstar_change.loc[(~bpp_subset_kstar_change.index.duplicated(keep='first'))].kstar_1
         mass_transfer_df['mass_1_pre_mt1'] = bpp_subset_start.loc[(~bpp_subset_start.index.duplicated(keep='first'))].mass_1
@@ -189,7 +189,7 @@ def process_bpp(bpp, optional_columns):
         
         bpp_subset_start = bpp_subset.loc[bpp_subset.evol_type == 3]
         bpp_subset_end = bpp_subset.loc[bpp_subset.evol_type == 4]
-        bpp_subset_kstar_change = bpp_subset.loc[bpp_subset.evol_type == 2]
+        bpp_subset_kstar_change = bpp_subset.loc[(bpp_subset.evol_type == 2) & (bpp_subset.RRLO_2 > 1)]
 
         mass_transfer_df['mt_kstar_2_change'] = bpp_subset_kstar_change.loc[(~bpp_subset_kstar_change.index.duplicated(keep='first'))].kstar_1
         mass_transfer_df['mass_1_pre_mt2'] = bpp_subset_start.loc[(~bpp_subset_start.index.duplicated(keep='first'))].mass_1
